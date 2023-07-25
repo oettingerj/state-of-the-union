@@ -1,30 +1,36 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { FilesetResolver, FaceLandmarker, type NormalizedLandmark } from '@mediapipe/tasks-vision'
+	import {
+		extractFace,
+		initProcessor,
+		processFrame
+	} from '$lib/services/media/facial-recognition'
+	import {
+		FACE_PLACEMENT_X,
+		FACE_PLACEMENT_Y,
+		FACE_WIDTH
+	} from '$lib/services/media/image-mask-definitions'
 
 	let videoRef: HTMLVideoElement
-	let lastVideoTime = -1
-	let faceLandmarker: FaceLandmarker
-	let facialLandmarks: NormalizedLandmark[][] = []
-
-	async function initProcessor(): Promise<FaceLandmarker> {
-		const vision = await FilesetResolver.forVisionTasks(
-			// path/to/wasm/root
-			'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
-		)
-		faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-			baseOptions: {
-				modelAssetPath: '/models/face_landmarker.task'
-			},
-			runningMode: 'VIDEO'
-		})
-	}
+	let canvasRef: HTMLCanvasElement
+	let bgRef: HTMLImageElement
+	let lastTimestamp = -1
 
 	function renderLoop(): void {
-		if (videoRef && videoRef.currentTime !== lastVideoTime) {
-			const faceLandmarkerResult = faceLandmarker.detectForVideo(videoRef, videoRef.currentTime)
-			facialLandmarks = faceLandmarkerResult.faceLandmarks
-			lastVideoTime = videoRef.currentTime
+		if (videoRef && videoRef.currentTime !== lastTimestamp) {
+			lastTimestamp = videoRef.currentTime
+			const result = processFrame(videoRef)
+			if (result.faceLandmarks.length > 0) {
+				const faceData = extractFace(videoRef, result.faceLandmarks[0])
+				if (faceData) {
+					const ctx = canvasRef.getContext('2d')
+					ctx.clearRect(0, 0, canvasRef.width, canvasRef.height)
+					canvasRef.height = faceData.height
+					canvasRef.width = faceData.width
+					ctx.putImageData(faceData.data, 0, 0)
+					calculateFacePlacement()
+				}
+			}
 		}
 
 		requestAnimationFrame(() => {
@@ -32,9 +38,17 @@
 		})
 	}
 
-	onMount(async () => {
-		const faceLandmarker = await initProcessor()
+	function calculateFacePlacement() {
+		const faceX = bgRef.clientWidth * FACE_PLACEMENT_X
+		const faceY = bgRef.clientHeight * FACE_PLACEMENT_Y
+		const faceWidth = bgRef.clientWidth * FACE_WIDTH
+		canvasRef.style.top = faceY + 'px'
+		canvasRef.style.left = faceX + 'px'
+		canvasRef.style.width = faceWidth + 'px'
+	}
 
+	onMount(async () => {
+		await initProcessor()
 		try {
 			const mediaStream = await navigator.mediaDevices.getUserMedia({
 				video: true,
@@ -50,21 +64,21 @@
 	})
 </script>
 
-<div class="relative">
-	<video class="h-[300px]" bind:this={videoRef} />
-	{#each facialLandmarks as row}
-		{#each row as landmark}
-			<div
-				class="absolute w-1 h-1 bg-white rounded-full"
-				style="top: {videoRef.clientHeight * landmark.y}px; left: {videoRef.clientWidth *
-					(1 - landmark.x)}px;"
-			/>
-		{/each}
-	{/each}
+<div class="relative bg-black">
+	<video hidden bind:this={videoRef}>
+		<track kind="captions" />
+	</video>
+	<img
+		bind:this={bgRef}
+		src="/images/sotu-template.webp"
+		alt="background"
+		class="relative z-10"
+	/>
+	<canvas id="face" class="absolute" bind:this={canvasRef} />
 </div>
 
 <style>
-	video {
+	#face {
 		transform: rotateY(180deg);
 	}
 </style>
