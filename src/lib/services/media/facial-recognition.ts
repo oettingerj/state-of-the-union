@@ -16,21 +16,22 @@ export function processFrame(video: HTMLVideoElement): FaceLandmarkerResult {
 }
 
 export async function initProcessor() {
-	const fileset = await FilesetResolver.forVisionTasks(
-		'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
-	)
-	landmarker = await FaceLandmarker.createFromOptions(fileset, {
-		baseOptions: {
-			modelAssetPath:
-				'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task',
-			delegate: 'GPU'
-		},
-		runningMode: 'VIDEO',
-		numFaces: 1
-	})
+	if (!landmarker) {
+		const fileset = await FilesetResolver.forVisionTasks(
+			'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
+		)
+		landmarker = await FaceLandmarker.createFromOptions(fileset, {
+			baseOptions: {
+				modelAssetPath: '/models/face_landmarker.task',
+				delegate: 'GPU'
+			},
+			runningMode: 'VIDEO',
+			numFaces: 1
+		})
+	}
 }
 
-export function extractFace(video: HTMLVideoElement, landmarks: NormalizedLandmark[]) {
+export async function extractFace(video: HTMLVideoElement, landmarks: NormalizedLandmark[]) {
 	const canvas = new OffscreenCanvas(video.videoWidth, video.videoHeight)
 	const faceOval = FaceLandmarker.FACE_LANDMARKS_FACE_OVAL
 	const canvasCtx = canvas.getContext('2d')
@@ -67,10 +68,16 @@ export function extractFace(video: HTMLVideoElement, landmarks: NormalizedLandma
 			}
 		})
 		canvasCtx.fill()
+		minX = Math.max(minX, 0)
+		maxX = Math.min(maxX, canvas.width)
+		minY = Math.max(minY, 0)
+		maxY = Math.min(maxY, canvas.height)
 		const faceWidth = maxX - minX
 		const faceHeight = maxY - minY
+		const imageData = canvasCtx.getImageData(minX, minY, faceWidth, faceHeight)
+		const faceImage = await createImageBitmap(imageData)
 		return {
-			data: canvasCtx.getImageData(minX, minY, faceWidth, faceHeight),
+			image: faceImage,
 			height: faceHeight,
 			width: faceWidth
 		}

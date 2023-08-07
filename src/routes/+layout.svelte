@@ -12,6 +12,6 @@
 	}
 </script>
 
-<main class="min-h-screen flex flex-col">
+<main class="min-h-screen">
 	<slot />
 </main>
