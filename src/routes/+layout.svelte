@@ -5,10 +5,8 @@
 	import '@nordhealth/css/lib/nord.min.css'
 
 	import { browser } from '$app/environment'
-	import { initApp } from '../lib/services/firebase/firebase'
 	if (browser) {
 		import('@nordhealth/components')
-		initApp()
 	}
 </script>
 

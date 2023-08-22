@@ -1,141 +1,105 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte'
-	import {
-		extractFace,
-		initProcessor,
-		processFrame
-	} from '$lib/services/media/facial-recognition'
-	import {
-		FACE_PLACEMENT_X_COEFFICIENT,
-		FACE_PLACEMENT_Y_COEFFICIENT,
-		FACE_WIDTH_COEFFICIENT
-	} from '$lib/services/media/image-mask-definitions'
-	import { Recorder } from '$lib/services/media/av'
+	import TextArea from '$lib/components/TextArea.svelte'
+	import { goto } from '$app/navigation'
+	import { createAddress } from '$lib/services/firebase/firestore'
 
-	let videoRef: HTMLVideoElement
-	let canvasRef: HTMLCanvasElement
-	let bgRef: HTMLImageElement
-	let lastTimestamp = -1
-	let mediaStream: MediaStream
-	let recorder: Recorder
-	let recording = false
+	const now = new Date()
+	const dateString = now.toLocaleDateString('en-US')
 
-	async function renderLoop() {
-		if (videoRef && videoRef.currentTime !== lastTimestamp) {
-			lastTimestamp = videoRef.currentTime
-			const result = processFrame(videoRef)
-			if (result.faceLandmarks.length > 0) {
-				const faceData = await extractFace(videoRef, result.faceLandmarks[0])
-				if (faceData) {
-					const bgRatio = bgRef.naturalHeight / bgRef.naturalWidth
-					const bgWidth = canvasRef.width
-					const bgHeight = canvasRef.width * bgRatio
-					const bgOffsetY = (canvasRef.height - bgHeight) / 2
-					const facePlacement = calculateFacePlacement(
-						faceData.image,
-						bgWidth,
-						bgHeight,
-						bgOffsetY
-					)
-					const ctx = canvasRef.getContext('2d')!
-					canvasRef.width = canvasRef.clientWidth ?? 0
-					canvasRef.height = canvasRef.clientHeight ?? 0
-					ctx.clearRect(0, 0, canvasRef.width, canvasRef.height)
-					ctx.save()
-					ctx.translate(facePlacement.width, 0)
-					ctx.scale(-1, 1)
-					ctx.drawImage(
-						faceData.image,
-						-facePlacement.x,
-						facePlacement.y,
-						facePlacement.width,
-						facePlacement.height
-					)
-					ctx.restore()
-					ctx.drawImage(bgRef, 0, bgOffsetY, bgWidth, bgHeight)
-				}
-			}
-		}
+	let title = `State of the Union Address ${dateString}`
+	let whatsIn = ''
+	let whatsOut = ''
+	let editingTitle = false
+	let titleRef: HTMLHeadingElement
 
-		requestAnimationFrame(() => {
-			renderLoop()
+	$: continueDisabled = whatsIn.length === 0 || whatsOut.length === 0
+
+	async function submitAddress() {
+		const id = await createAddress({
+			title,
+			in: whatsIn,
+			out: whatsOut
 		})
+		await goto(`/address/${id}/record`)
 	}
 
-	function calculateFacePlacement(
-		faceImage: ImageBitmap,
-		bgWidth: number,
-		bgHeight: number,
-		bgOffsetY: number
-	) {
-		const faceRatio = faceImage.height / faceImage.width
-		const faceX = bgWidth * FACE_PLACEMENT_X_COEFFICIENT
-		const faceY = bgHeight * FACE_PLACEMENT_Y_COEFFICIENT + bgOffsetY
-		const faceWidth = bgWidth * FACE_WIDTH_COEFFICIENT
-		return { y: faceY, x: faceX, width: faceWidth, height: faceWidth * faceRatio }
+	function handleTitleFocus() {
+		editingTitle = true
+		const range = document.createRange()
+		range.selectNodeContents(titleRef)
+		const selection = window.getSelection()
+		if (selection) {
+			selection.removeAllRanges()
+			selection.addRange(range)
+		}
 	}
 
-	function handleRecordClick() {
-		if (!recording) {
-			startRecording()
+	function handleTitleBlur() {
+		editingTitle = false
+	}
+
+	function handleEditButtonClick() {
+		if (editingTitle) {
+			titleRef.blur()
 		} else {
-			stopRecording()
+			titleRef.focus()
 		}
 	}
 
-	function startRecording() {
-		recorder = new Recorder(canvasRef, mediaStream)
-		recorder.start()
-		recording = true
+	function handleTitleInput() {
+		title = titleRef.textContent ?? title
 	}
-
-	async function stopRecording() {
-		const data = await recorder.stop()
-		let recordedBlob = new Blob(data, { type: 'video/webm' })
-		const url = URL.createObjectURL(recordedBlob)
-		const link = document.createElement('a')
-		link.href = url
-		link.download = 'video.webm'
-		link.hidden = true
-		document.body.appendChild(link)
-		link.click()
-		recording = false
-	}
-
-	onMount(async () => {
-		await initProcessor()
-		try {
-			mediaStream = await navigator.mediaDevices.getUserMedia({
-				video: true,
-				audio: true
-			})
-
-			videoRef.srcObject = mediaStream
-			await videoRef.play()
-			renderLoop()
-		} catch (e) {
-			console.warn(e)
-		}
-	})
-
-	onDestroy(() => {
-		if (mediaStream) {
-			mediaStream.getTracks().forEach((track) => {
-				track.stop()
-			})
-		}
-	})
 </script>
 
-<div class="relative bg-black h-full">
-	<video hidden bind:this={videoRef} />
-	<img hidden bind:this={bgRef} src="/images/sotu-template.webp" alt="background" />
-	<canvas bind:this={canvasRef} class="absolute h-full w-full" />
-	<nord-button on:click={handleRecordClick}>{recording ? 'Stop' : 'Record'}</nord-button>
+<div class="flex flex-col items-center p-10 gap-5">
+	<div class="flex gap-4 items-center">
+		<h2
+			bind:this={titleRef}
+			contenteditable="true"
+			class="p-2 text-xl font-medium outline-pink-500"
+			on:focus={handleTitleFocus}
+			on:blur={handleTitleBlur}
+			on:input={handleTitleInput}
+		>
+			{title}
+		</h2>
+		<button
+			on:click={handleEditButtonClick}
+			class="flex items-center justify-center text-gray-700 hover:text-gray-500"
+		>
+			{#if editingTitle}
+				<nord-icon name="interface-checked" size="l" />
+			{:else}
+				<nord-icon name="interface-edit" size="l" />
+			{/if}
+		</button>
+	</div>
+	<p class="prose">
+		The American people are rudderless. They need to know – from the nation's highest office –
+		what's in and what's out. Draft your talking points below, then record your address so you
+		can share it with your constituents.
+	</p>
+	<div
+		class="grid md:grid-cols-2 grid-rows-2 md:grid-rows-1 gap-x-5 gap-y-12 w-full min-h-[300px]"
+	>
+		<div class="col-start-1">
+			<h3 class="text-xl font-medium mb-1">What's In?</h3>
+			<TextArea bind:value={whatsIn} class="w-full h-full" />
+		</div>
+		<div class="row-start-2 md:row-start-1 md:col-start-2">
+			<h3 class="text-xl font-medium mb-1">What's Out?</h3>
+			<TextArea bind:value={whatsOut} class="w-full h-full" />
+		</div>
+	</div>
+	<div class="mt-10">
+		<nord-button
+			disabled={continueDisabled}
+			on:click={submitAddress}
+			size="l"
+			variant="primary"
+		>
+			<nord-icon slot="start" name="interface-video" size="l" />
+			Record
+		</nord-button>
+	</div>
 </div>
-
-<style>
-	#face {
-		transform: rotateY(180deg);
-	}
-</style>

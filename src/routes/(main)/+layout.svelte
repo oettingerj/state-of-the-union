@@ -1,5 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { getCurrentUser, signOut } from '$lib/services/firebase/auth'
+	import { goto } from '$app/navigation'
+
+	async function handleSignOut() {
+		await signOut()
+		return goto('/auth/login')
+	}
 </script>
 
 <nord-layout padding="none">
@@ -17,18 +24,25 @@
 			Home
 		</nord-nav-item>
 		<nord-nav-item
-			href="/address"
-			active={$page.url.pathname === '/address'}
-			icon="interface-video"
+			href="/library"
+			active={$page.url.pathname === '/library'}
+			icon="interface-content-book"
 		>
-			Record An Address
+			Library
+		</nord-nav-item>
+		<nord-nav-item
+			href="/address"
+			active={$page.url.pathname.includes('/address')}
+			icon="file-notes"
+		>
+			Draft An Address
 		</nord-nav-item>
 		<nord-dropdown expand slot="footer">
 			<nord-button slot="toggle" expand>
-				<nord-avatar slot="start" name="Ronald McDonald" />
-				Ronald McDonald
+				<nord-avatar slot="start" />
+				{getCurrentUser()?.displayName ?? 'User'}
 			</nord-button>
-			<nord-dropdown-item>
+			<nord-dropdown-item on:click={handleSignOut}>
 				Sign out
 				<nord-icon slot="end" name="interface-logout" />
 			</nord-dropdown-item>

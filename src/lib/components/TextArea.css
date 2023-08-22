@@ -1,0 +1,7 @@
+.ProseMirror {
+    @apply h-full w-full px-5 py-5;
+}
+
+.ProseMirror-focused {
+    outline: none;
+}
