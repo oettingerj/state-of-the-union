@@ -4,7 +4,7 @@
 	import { onDestroy, onMount } from 'svelte'
 	import type { PageData } from './$types'
 	import { uploadVideo } from '$lib/services/firebase/storage'
-	import InOutBox from '$lib/components/InOutBox'
+	import InOutBox from '$lib/components/InOutBox.svelte'
 
 	export let data: PageData
 
