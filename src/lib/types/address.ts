@@ -7,4 +7,5 @@ export interface Address {
 	in: string
 	out: string
 	videoUrl: string
+	thumbnailUrl: string
 }

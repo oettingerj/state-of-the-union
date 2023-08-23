@@ -16,6 +16,8 @@
 	let videoRef: HTMLVideoElement
 	let bgRef: HTMLImageElement
 	let lastTimestamp = -1
+	let canvasWidth = 1000
+	let canvasHeight = 1000
 
 	async function renderLoop() {
 		if (videoRef && videoRef.currentTime !== lastTimestamp) {
@@ -24,17 +26,18 @@
 			if (result.faceLandmarks.length > 0) {
 				const faceData = await extractFace(videoRef, result.faceLandmarks[0])
 				if (faceData) {
-					const bgRatio = bgRef.naturalHeight / bgRef.naturalWidth
-					const bgWidth = canvas.width
-					const bgHeight = canvas.width * bgRatio
-					const facePlacement = calculateFacePlacement(faceData.image, bgWidth, bgHeight)
+					const facePlacement = calculateFacePlacement(
+						faceData.image,
+						canvas.width,
+						canvas.height
+					)
 					const ctx = canvas.getContext('2d')
 					if (ctx) {
 						canvas.width = canvas.clientWidth ?? 0
 						canvas.height = canvas.clientHeight ?? 0
 						ctx.clearRect(0, 0, canvas.width, canvas.height)
 						ctx.fillStyle = 'black'
-						ctx.fillRect(0, 0, bgWidth, bgHeight)
+						ctx.fillRect(0, 0, canvas.width, canvas.height)
 						ctx.save()
 						ctx.translate(facePlacement.width, 0)
 						ctx.scale(-1, 1)
@@ -46,7 +49,7 @@
 							facePlacement.height
 						)
 						ctx.restore()
-						ctx.drawImage(bgRef, 0, 0, bgWidth, bgHeight)
+						ctx.drawImage(bgRef, 0, 0, canvas.width, canvas.height)
 					}
 				}
 			}
@@ -66,6 +69,8 @@
 	}
 
 	onMount(async () => {
+		canvasHeight = bgRef.naturalHeight
+		canvasWidth = bgRef.naturalWidth
 		await initProcessor()
 		try {
 			videoRef.srcObject = mediaStream
@@ -77,8 +82,13 @@
 	})
 </script>
 
-<div class="h-full">
-	<video hidden bind:this={videoRef} />
+<div class="h-full relative overflow-hidden rounded-lg shadow-lg">
+	<video hidden bind:this={videoRef} volume={0} />
 	<img hidden bind:this={bgRef} src="/images/sotu-template.webp" alt="background" />
-	<canvas bind:this={canvas} class="h-full w-full overflow-hidden rounded-lg shadow-lg" />
+	<canvas
+		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-20 sm:scale-25 lg:scale-40"
+		bind:this={canvas}
+		width={canvasWidth}
+		height={canvasHeight}
+	/>
 </div>

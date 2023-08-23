@@ -15,7 +15,9 @@
 	import { History } from '@tiptap/extension-history'
 	import { TextStyle } from '@tiptap/extension-text-style'
 	import { Color } from '@tiptap/extension-color'
+	import { Image } from '@tiptap/extension-image'
 	import { onDestroy, onMount } from 'svelte'
+	import { uploadImage } from '$lib/services/firebase/storage'
 
 	export let value = ''
 	let className = ''
@@ -24,6 +26,8 @@
 	let editor: Editor
 	let currentColor = '#000000'
 	let colorPickerRef: HTMLInputElement
+	let fileInputRef: HTMLInputElement
+	let uploadingImage = false
 
 	$: isBold = editor?.isActive('bold')
 	$: isItalic = editor?.isActive('italic')
@@ -37,7 +41,11 @@
 			extensions: [
 				Document,
 				Text,
-				Paragraph,
+				Paragraph.configure({
+					HTMLAttributes: {
+						class: 'max-h-full'
+					}
+				}),
 				Bold,
 				Italic,
 				Underline,
@@ -49,7 +57,13 @@
 				BulletList,
 				History,
 				TextStyle,
-				Color
+				Color,
+				Image.configure({
+					inline: true,
+					HTMLAttributes: {
+						class: 'object-contain max-h-full'
+					}
+				})
 			],
 			content: value,
 			editable: true,
@@ -93,6 +107,20 @@
 		currentColor = colorPickerRef.value
 		editor.commands.setColor(currentColor)
 	}
+
+	function addImage() {
+		fileInputRef.click()
+	}
+
+	async function handleSelectImage() {
+		const files = fileInputRef.files
+		if (files && files.length > 0) {
+			uploadingImage = true
+			const imageUrl = await uploadImage(files[0])
+			editor.commands.setImage({ src: imageUrl })
+			uploadingImage = false
+		}
+	}
 </script>
 
 <div
@@ -126,14 +154,26 @@
 				<nord-icon name="text-underline" size="m" />
 			</nord-button>
 		</nord-button-group>
-		<nord-button
-			variant={isList ? 'primary' : 'default'}
-			class:selected={isList}
-			on:click={toggleList}
-			on:mousedown|preventDefault
-		>
-			<nord-icon name="text-list" size="m" />
-		</nord-button>
+		<nord-button-group>
+			<nord-button
+				variant={isList ? 'primary' : 'default'}
+				class:selected={isList}
+				on:click={toggleList}
+				on:mousedown|preventDefault
+			>
+				<nord-icon name="text-list" size="m" />
+			</nord-button>
+			<nord-button loading={uploadingImage} on:click={addImage} on:mousedown|preventDefault>
+				<nord-icon name="file-picture" size="m" />
+				<input
+					bind:this={fileInputRef}
+					hidden
+					type="file"
+					accept="image/*"
+					on:change|preventDefault={handleSelectImage}
+				/>
+			</nord-button>
+		</nord-button-group>
 		<nord-button
 			style="--n-button-padding-inline: 4px"
 			on:click={handleColorPickerClick}

@@ -4,7 +4,13 @@ import typography from '@tailwindcss/typography'
 export default {
 	content: ['src/**/*.{js,ts,html,svelte}'],
 	theme: {
-		extend: {}
+		extend: {
+			scale: {
+				20: '0.2',
+				25: '0.25',
+				40: '0.4'
+			}
+		}
 	},
 	plugins: [typography]
 }

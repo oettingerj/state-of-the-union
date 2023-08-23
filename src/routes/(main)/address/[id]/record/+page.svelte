@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte'
 	import type { PageData } from './$types'
 	import { uploadVideo } from '$lib/services/firebase/storage'
+	import InOutBox from '$lib/components/InOutBox'
 
 	export let data: PageData
 
@@ -56,8 +57,8 @@
 	}
 </script>
 
-<div class="flex flex-col h-full items-center p-5 gap-5">
-	<div class="relative h-2/3 w-full">
+<div class="grid grid-cols-2 grid-rows-2 h-full p-5 gap-5">
+	<div class="relative row-start-1 col-span-2">
 		{#if mediaStream}
 			<AddressCanvas bind:canvas {mediaStream} />
 		{/if}
@@ -75,16 +76,20 @@
 			</span>
 		</nord-button>
 	</div>
-	<div class="flex gap-5 w-full justify-around">
-		<div class="flex grow flex-col gap-1 bg-white py-5 px-10 rounded-lg shadow-md">
-			<h2 class="text-xl font-medium">What's In</h2>
-			{@html data.address.in}
-		</div>
-		<div class="flex grow flex-col gap-1 bg-white py-5 px-10 rounded-lg shadow-md">
-			<h2 class="text-xl font-medium">What's Out</h2>
-			{@html data.address.out}
-		</div>
-	</div>
+	<InOutBox
+		class="row-start-2 col-start-1"
+		address={data.address}
+		currentUser={data.currentUser}
+		title="💅 What's In"
+		htmlContent={data.address.in}
+	/>
+	<InOutBox
+		class="row-start-2 col-start-2"
+		address={data.address}
+		currentUser={data.currentUser}
+		title="🤢 What's Out"
+		htmlContent={data.address.out}
+	/>
 </div>
 
 <style>

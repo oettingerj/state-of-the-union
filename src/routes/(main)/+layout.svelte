@@ -1,7 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { getCurrentUser, signOut } from '$lib/services/firebase/auth'
-	import { goto } from '$app/navigation'
+	import { beforeNavigate, goto } from '$app/navigation'
+	import type { LayoutData } from './$types'
+
+	export let data: LayoutData
+
+	beforeNavigate(({ from, to, cancel, type }) => {
+		if (type === 'popstate' && to?.route.id === '/(main)/address/new') {
+			if (from?.route.id?.endsWith('/record')) {
+				cancel()
+				if (from?.params?.id) {
+					goto(`/address/${from.params.id}/edit`)
+				}
+			}
+		}
+	})
 
 	async function handleSignOut() {
 		await signOut()
@@ -31,7 +45,7 @@
 			Library
 		</nord-nav-item>
 		<nord-nav-item
-			href="/address"
+			href="/address/new"
 			active={$page.url.pathname.includes('/address')}
 			icon="file-notes"
 		>
@@ -40,7 +54,7 @@
 		<nord-dropdown expand slot="footer">
 			<nord-button slot="toggle" expand>
 				<nord-avatar slot="start" />
-				{getCurrentUser()?.displayName ?? 'User'}
+				{data.currentUser?.displayName ?? 'User'}
 			</nord-button>
 			<nord-dropdown-item on:click={handleSignOut}>
 				Sign out

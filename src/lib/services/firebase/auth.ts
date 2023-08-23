@@ -44,8 +44,9 @@ export async function isLoggedIn() {
 	return auth.currentUser !== null
 }
 
-export function getCurrentUser() {
+export async function getCurrentUser() {
 	const auth = getFBAuth()
+	await auth.authStateReady()
 	return auth.currentUser
 }
 

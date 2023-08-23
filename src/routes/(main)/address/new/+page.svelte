@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TextArea from '$lib/components/TextArea.svelte'
+	import TextArea from '$lib/components/TextArea/TextArea.svelte'
 	import { goto } from '$app/navigation'
 	import { createAddress } from '$lib/services/firebase/firestore'
 

@@ -1,11 +1,11 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app'
+import { initializeApp as initializeClientApp, type FirebaseApp } from 'firebase/app'
 import firebaseConfig from './config'
 import { browser } from '$app/environment'
 
 let app: FirebaseApp
 
 export function initApp() {
-	app = initializeApp(firebaseConfig)
+	app = initializeClientApp(firebaseConfig)
 }
 
 export function getApp() {
