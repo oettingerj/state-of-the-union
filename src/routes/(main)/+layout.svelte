@@ -46,7 +46,7 @@
 		</nord-nav-item>
 		<nord-nav-item
 			href="/address/new"
-			active={$page.url.pathname.includes('/address')}
+			active={$page.url.pathname === '/address/new'}
 			icon="file-notes"
 		>
 			Draft An Address

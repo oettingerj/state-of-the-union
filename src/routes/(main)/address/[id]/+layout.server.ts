@@ -1,5 +1,5 @@
 import type { LayoutLoad } from './$types'
-import { getAddress } from '$lib/services/firebase/firestore'
+import { getAddress } from '$lib/services/firebase/admin.server'
 import type { Address } from '$lib/types/address'
 import { error } from '@sveltejs/kit'
 
@@ -12,6 +12,9 @@ export const load: LayoutLoad = async ({ params }) => {
 		console.error(err)
 		throw error(404)
 	}
+
+	delete address.created
+	delete address.updated
 
 	return {
 		address: {

@@ -76,7 +76,9 @@
 	})
 
 	onDestroy(() => {
-		editor.destroy()
+		if (editor) {
+			editor.destroy()
+		}
 	})
 
 	function handleInput() {

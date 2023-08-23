@@ -5,6 +5,7 @@
 	import type { PageData } from './$types'
 	import { uploadVideo } from '$lib/services/firebase/storage'
 	import InOutBox from '$lib/components/InOutBox.svelte'
+	import { goto } from '$app/navigation'
 
 	export let data: PageData
 
@@ -54,6 +55,7 @@
 		let recordedBlob = new Blob(recordedData, { type: 'video/webm' })
 		await uploadVideo(data.address.id, recordedBlob)
 		uploading = false
+		return goto(`/address/${data.address.id}`)
 	}
 </script>
 

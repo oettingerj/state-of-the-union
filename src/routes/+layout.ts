@@ -3,7 +3,7 @@ import { isLoggedIn } from '$lib/services/firebase/auth'
 import { redirect } from '@sveltejs/kit'
 import { browser } from '$app/environment'
 
-export const ssr = false
+export const ssr = true
 
 export const load: LayoutLoad = async ({ route }) => {
 	if (browser) {
@@ -11,6 +11,4 @@ export const load: LayoutLoad = async ({ route }) => {
 			throw redirect(307, '/auth/login')
 		}
 	}
-
-	return {}
 }
