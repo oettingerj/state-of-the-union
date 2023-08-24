@@ -14,6 +14,7 @@
 	let canvas: HTMLCanvasElement
 	let mediaStream: MediaStream
 	let uploading = false
+	let loading = true
 
 	onMount(async () => {
 		try {
@@ -35,6 +36,10 @@
 			})
 		}
 	})
+
+	function handleLoadComplete() {
+		loading = false
+	}
 
 	function handleRecordClick() {
 		if (!recording) {
@@ -61,25 +66,38 @@
 	}
 </script>
 
-<div class="grid grid-cols-2 grid-rows-3 h-full gap-5 p-5">
+<div class="grid grid-cols-2 grid-rows-3 md:grid-rows-2 h-full gap-5 p-5">
 	<div class="relative row-start-1 col-span-2 flex h-full items-center justify-center">
 		<div class="relative h-full w-full">
-			{#if mediaStream}
-				<AddressCanvas bind:canvas {mediaStream} />
+			{#if loading}
+				<div
+					class="absolute flex flex-col items-center gap-1 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+				>
+					<nord-spinner size="xl" />
+					<span class="text-xs text-gray-600">Loading video...</span>
+				</div>
 			{/if}
-			<nord-button
-				loading={uploading}
-				on:click={handleRecordClick}
-				size="m"
-				class="absolute top-2 right-2"
-			>
-				{#if recording}
-					<div slot="start" class="recording-indicator rounded-full bg-red-600 w-5 h-5" />
-				{/if}
-				<span>
-					{recording ? 'Stop' : 'Start'} Recording
-				</span>
-			</nord-button>
+			{#if mediaStream}
+				<AddressCanvas bind:canvas {mediaStream} on:load-complete={handleLoadComplete} />
+			{/if}
+			{#if !loading}
+				<nord-button
+					loading={uploading}
+					on:click={handleRecordClick}
+					size="m"
+					class="absolute top-2 right-2"
+				>
+					{#if recording}
+						<div
+							slot="start"
+							class="recording-indicator rounded-full bg-red-600 w-5 h-5"
+						/>
+					{/if}
+					<span>
+						{recording ? 'Stop' : 'Start'} Recording
+					</span>
+				</nord-button>
+			{/if}
 		</div>
 	</div>
 	<InOutBox

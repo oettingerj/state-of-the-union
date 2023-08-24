@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { createEventDispatcher, onMount } from 'svelte'
 	import {
 		extractFace,
 		initProcessor,
@@ -16,14 +16,16 @@
 	let videoRef: HTMLVideoElement
 	let bgRef: HTMLImageElement
 	let lastTimestamp = -1
-	let canvasWidth = 1000
-	let canvasHeight = 1000
+
+	const dispatch = createEventDispatcher()
 
 	async function renderLoop() {
 		if (videoRef && videoRef.currentTime !== lastTimestamp) {
 			lastTimestamp = videoRef.currentTime
 			const result = processFrame(videoRef)
 			if (result.faceLandmarks.length > 0) {
+				canvas.height = bgRef.naturalHeight
+				canvas.width = bgRef.naturalWidth
 				const faceData = await extractFace(videoRef, result.faceLandmarks[0])
 				if (faceData) {
 					const facePlacement = calculateFacePlacement(
@@ -69,26 +71,25 @@
 	}
 
 	onMount(async () => {
-		canvasHeight = bgRef.naturalHeight
-		canvasWidth = bgRef.naturalWidth
+		canvas.height = bgRef.naturalHeight
+		canvas.width = bgRef.naturalWidth
 		await initProcessor()
 		try {
 			videoRef.srcObject = mediaStream
 			await videoRef.play()
-			await renderLoop()
+			renderLoop()
 		} catch (e) {
 			console.warn(e)
 		}
+		dispatch('load-complete')
 	})
 </script>
 
 <div class="h-full relative overflow-hidden rounded-lg shadow-lg">
-	<video autoplay playsinline hidden bind:this={videoRef} volume={0} />
+	<video hidden bind:this={videoRef} muted />
 	<img hidden bind:this={bgRef} src="/images/sotu-template.webp" alt="background" />
 	<canvas
 		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-20 sm:scale-25 lg:scale-40"
 		bind:this={canvas}
-		width={canvasWidth}
-		height={canvasHeight}
 	/>
 </div>
