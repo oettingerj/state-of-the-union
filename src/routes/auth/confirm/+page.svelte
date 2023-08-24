@@ -8,12 +8,14 @@
 	import type { ConfirmationResult } from 'firebase/auth'
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
+	import { flat } from 'radash'
 
 	export let data: PageData
 	let errorText = ''
 	let confirmationResult: ConfirmationResult
 	let codeSent = false
 	let verificationCode: string
+	let verifying = false
 
 	const recaptchaContainerId = 'invisible-recaptcha-container'
 
@@ -28,12 +30,19 @@
 	})
 
 	async function handleConfirm() {
+		verifying = true
 		errorText = ''
 		try {
 			const user = await confirmSMSCode(confirmationResult, verificationCode)
-			await goto('/home')
+			verifying = false
+			if (user.displayName) {
+				return goto('/home')
+			} else {
+				return goto('/auth/info')
+			}
 		} catch (err) {
 			errorText = 'Invalid code'
+			verifying = false
 		}
 	}
 
@@ -63,7 +72,15 @@
 		>
 			<nord-icon slot="start" name="interface-shield" />
 		</nord-input>
-		<nord-button class="self-end" variant="primary" type="submit">Submit</nord-button>
+		<nord-button
+			loading={verifying}
+			disabled={!codeSent}
+			class="self-end"
+			variant="primary"
+			type="submit"
+		>
+			Submit
+		</nord-button>
 	</form>
 </div>
 

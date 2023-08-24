@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { getCurrentUser, signOut } from '$lib/services/firebase/auth'
+	import { signOut } from '$lib/services/firebase/auth'
 	import { beforeNavigate, goto } from '$app/navigation'
 	import type { LayoutData } from './$types'
+	import { onMount } from 'svelte'
+	import type { Layout } from '@nordhealth/components'
 
 	export let data: LayoutData
+
+	let navRef: Layout
 
 	beforeNavigate(({ from, to, cancel, type }) => {
 		if (type === 'popstate' && to?.route.id === '/(main)/address/new') {
@@ -17,13 +21,17 @@
 		}
 	})
 
+	onMount(() => {
+		navRef.navOpen = !navRef.isNarrow
+	})
+
 	async function handleSignOut() {
 		await signOut()
 		return goto('/auth/login')
 	}
 </script>
 
-<nord-layout padding="none">
+<nord-layout bind:this={navRef} padding="none">
 	<nord-navigation slot="nav">
 		<a href="/home" slot="header" class="flex items-center gap-3 px-3">
 			<img
@@ -54,7 +62,7 @@
 		<nord-dropdown expand slot="footer">
 			<nord-button slot="toggle" expand>
 				<nord-avatar slot="start" />
-				{data.currentUser?.displayName ?? 'User'}
+				{data.currentUser?.displayName ?? ''}
 			</nord-button>
 			<nord-dropdown-item on:click={handleSignOut}>
 				Sign out

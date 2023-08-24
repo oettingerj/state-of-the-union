@@ -3,10 +3,10 @@ import {
 	RecaptchaVerifier,
 	signInWithPhoneNumber,
 	updateProfile,
-	type ConfirmationResult,
-	type User
+	type ConfirmationResult
 } from 'firebase/auth'
 import { getApp } from '$lib/services/firebase/firebase'
+import type { FBUser } from '$lib/types/user'
 
 let recaptcha: RecaptchaVerifier
 
@@ -50,7 +50,7 @@ export async function getCurrentUser() {
 	return auth.currentUser
 }
 
-export function updateUser(user: Partial<User>) {
+export function updateUser(user: Partial<FBUser>) {
 	const auth = getFBAuth()
 	if (auth.currentUser === null) {
 		throw new Error('No user is logged in.')

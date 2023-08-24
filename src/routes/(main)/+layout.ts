@@ -5,7 +5,7 @@ import { browser } from '$app/environment'
 export const load: LayoutLoad = async () => {
 	if (browser) {
 		return {
-			currentUser: await getCurrentUser()
+			currentUser: getCurrentUser()
 		}
 	}
 }

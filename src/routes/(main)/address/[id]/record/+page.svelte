@@ -59,34 +59,36 @@
 	}
 </script>
 
-<div class="grid grid-cols-2 grid-rows-2 h-full p-5 gap-5">
-	<div class="relative row-start-1 col-span-2">
-		{#if mediaStream}
-			<AddressCanvas bind:canvas {mediaStream} />
-		{/if}
-		<nord-button
-			loading={uploading}
-			on:click={handleRecordClick}
-			size="l"
-			class="absolute top-0 right-0 m-5"
-		>
-			{#if recording}
-				<div slot="start" class="recording-indicator rounded-full bg-red-600 w-5 h-5" />
+<div class="grid grid-cols-2 grid-rows-3 h-full gap-5 p-5">
+	<div class="relative row-start-1 col-span-2 flex h-full items-center justify-center">
+		<div class="relative h-full w-full">
+			{#if mediaStream}
+				<AddressCanvas bind:canvas {mediaStream} />
 			{/if}
-			<span>
-				{recording ? 'Stop' : 'Start'} Recording
-			</span>
-		</nord-button>
+			<nord-button
+				loading={uploading}
+				on:click={handleRecordClick}
+				size="m"
+				class="absolute top-2 right-2"
+			>
+				{#if recording}
+					<div slot="start" class="recording-indicator rounded-full bg-red-600 w-5 h-5" />
+				{/if}
+				<span>
+					{recording ? 'Stop' : 'Start'} Recording
+				</span>
+			</nord-button>
+		</div>
 	</div>
 	<InOutBox
-		class="row-start-2 col-start-1"
+		class="row-start-2 col-start-1 col-span-2 md:col-span-1"
 		address={data.address}
 		currentUser={data.currentUser}
 		title="💅 What's In"
 		htmlContent={data.address.in}
 	/>
 	<InOutBox
-		class="row-start-2 col-start-2"
+		class="row-start-3 md:row-start-2 col-start-1 md:col-start-2 col-span-2 md:col-span-1"
 		address={data.address}
 		currentUser={data.currentUser}
 		title="🤢 What's Out"

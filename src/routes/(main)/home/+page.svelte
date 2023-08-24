@@ -7,12 +7,12 @@
 		src="/images/nicki.webp"
 		alt="nicki minaj"
 	/>
-	<div class="flex z-10 flex-col items-center p-10 gap-10">
-		<p class="text-lg w-1/2">
+	<div class="flex z-10 flex-col items-center px-10 py-16 gap-10">
+		<p class="prose-lg md:w-1/2">
 			Welcome! From here you can view addresses from States of the Union past, or contribute a
 			new address to the national discourse.
 		</p>
-		<div class="flex gap-5 justify-center">
+		<div class="flex flex-wrap gap-5 justify-center">
 			<nord-button expand href="/library">
 				<div class="flex flex-col items-center gap-1">
 					<nord-icon class="text-pink-600" name="interface-content-book" size="l" />

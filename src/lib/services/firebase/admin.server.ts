@@ -1,12 +1,17 @@
-import { initializeApp, cert } from 'firebase-admin/app'
+import { initializeApp, cert, type App, getApp } from 'firebase-admin/app'
 import { FIREBASE_SERVICE_ACCOUNT_KEY } from '$env/static/private'
 import type { Address } from '$lib/types/address'
 import { getFirestore } from 'firebase-admin/firestore'
 
 const serviceAccountKey = JSON.parse(FIREBASE_SERVICE_ACCOUNT_KEY)
-initializeApp({
-	credential: cert(serviceAccountKey)
-})
+
+export function initApp() {
+	if (!getApp()) {
+		initializeApp({
+			credential: cert(serviceAccountKey)
+		})
+	}
+}
 
 export async function getAddress(id: string): Promise<Address> {
 	const db = getFirestore()

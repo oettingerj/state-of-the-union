@@ -26,7 +26,7 @@
 		} else {
 			await updateAddress(address.id, address)
 		}
-		await goto(`/address/${address.id}/record`)
+		return goto(`/address/${address.id}/record`)
 	}
 
 	async function saveAddress() {

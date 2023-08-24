@@ -20,7 +20,7 @@
 			in: whatsIn,
 			out: whatsOut
 		})
-		await goto(`/address/${id}/record`)
+		return goto(`/address/${id}/record`)
 	}
 
 	function handleTitleFocus() {
@@ -51,7 +51,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center p-10 gap-5">
+<div class="flex flex-col items-center py-16 px-5 md:px-10 gap-5">
 	<div class="flex gap-4 items-center">
 		<h2
 			bind:this={titleRef}
@@ -74,7 +74,7 @@
 			{/if}
 		</button>
 	</div>
-	<p class="prose">
+	<p class="prose-sm md:prose">
 		The American people are rudderless. They need to know – from the nation's highest office –
 		what's in and what's out. Draft your talking points below, then record your address so you
 		can share it with your constituents.

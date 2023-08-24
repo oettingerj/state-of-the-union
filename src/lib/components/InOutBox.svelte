@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Address } from '$lib/types/address'
-	import type { User } from 'firebase/auth'
+	import type { FBUser } from '$lib/types/user'
 
 	export let address: Address
-	export let currentUser: User | null | undefined = undefined
+	export let currentUser: FBUser | null | undefined = undefined
 	export let title: string
 	export let htmlContent: string
 	let className: string = ''
@@ -11,7 +11,7 @@
 </script>
 
 <div
-	class="flex flex-col gap-1 bg-white pt-5 pb-16 px-10 rounded-lg shadow-md border border-gray-300 {className}"
+	class="flex flex-col gap-1 bg-white pt-2 md:pt-5 pb-16 px-5 md:px-10 rounded-lg shadow-md border border-gray-300 {className}"
 >
 	<div class="flex justify-between items-end">
 		<h2 class="text-xl font-medium">{title}</h2>
