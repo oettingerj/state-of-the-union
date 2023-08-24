@@ -18,7 +18,9 @@
 	onMount(async () => {
 		try {
 			mediaStream = await navigator.mediaDevices.getUserMedia({
-				video: true,
+				video: {
+					facingMode: 'user'
+				},
 				audio: true
 			})
 		} catch (e) {
