@@ -86,7 +86,7 @@
 </script>
 
 <div class="h-full relative overflow-hidden rounded-lg shadow-lg">
-	<video hidden bind:this={videoRef} muted />
+	<video playsinline autoplay hidden bind:this={videoRef} muted />
 	<img hidden bind:this={bgRef} src="/images/sotu-template.webp" alt="background" />
 	<canvas
 		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-20 sm:scale-25 lg:scale-40"
