@@ -1,4 +1,4 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 import { getApp } from '$lib/services/firebase/firebase'
 import { updateAddress } from '$lib/services/firebase/firestore'
 import { uid } from 'radash'
@@ -9,13 +9,9 @@ function getFBStorage() {
 
 export async function uploadVideo(addressId: string, blob: Blob) {
 	const storage = getFBStorage()
-	const videoRef = ref(storage, `address-videos/${addressId}`)
+	const videoRef = ref(storage, `video-staging/${addressId}`)
 	await uploadBytes(videoRef, blob)
-	const downloadUrl = await getDownloadURL(videoRef)
-	await updateAddress(addressId, {
-		videoUrl: downloadUrl
-	})
-	return downloadUrl
+	return await getDownloadURL(videoRef)
 }
 
 export async function uploadImage(data: File | Blob) {

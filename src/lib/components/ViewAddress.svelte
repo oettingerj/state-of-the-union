@@ -5,9 +5,12 @@
 	import { getShareUrl } from '$lib/services/utils/share'
 	import type { FBUser } from '$lib/types/user'
 	import { notify } from '$lib/stores/notifications'
+	import { PENDING_VIDEO } from '../constants/av'
 
 	export let address: Address
 	export let currentUser: FBUser | null | undefined = undefined
+
+	const isCurrentUser = address.userId === currentUser?.uid
 
 	function shareAddress() {
 		if (navigator.share && navigator.canShare()) {
@@ -19,6 +22,10 @@
 			navigator.clipboard.writeText(getShareUrl(address.id))
 			notify('Link copied to clipboard')
 		}
+	}
+
+	function refreshPage() {
+		location.reload()
 	}
 </script>
 
@@ -37,17 +44,35 @@
 		{/if}
 	</div>
 	<div class="relative row-start-3 col-span-2 flex h-full items-center justify-center">
-		<div class="relative h-full">
-			<video controls class="max-h-full" src={address.videoUrl} />
-			{#if address.userId === currentUser?.uid}
-				<nord-button
-					class="absolute top-1 md:top-3 right-1 md:right-3"
-					href="/address/{address.id}/record"
-				>
-					<nord-icon name="interface-video" size="m" />
-				</nord-button>
-			{/if}
-		</div>
+		{#if address.videoUrl}
+			<div class="relative h-full">
+				{#if address.videoUrl !== PENDING_VIDEO}
+					<video
+						controls
+						class="max-h-full rounded-lg"
+						src={address.videoUrl}
+						poster={address.thumbnailUrl}
+					/>
+					{#if address.userId === currentUser?.uid}
+						<nord-button
+							class="absolute top-1 md:top-3 right-1 md:right-3"
+							href="/address/{address.id}/record"
+						>
+							<nord-icon name="interface-video" size="m" />
+						</nord-button>
+					{/if}
+				{:else}
+					<nord-empty-state>
+						<h2>Video Processing In Progress</h2>
+						<p>
+							{isCurrentUser ? 'Your' : 'This'} video is processing. This typically takes
+							less than a minute.
+						</p>
+						<nord-button on:click={refreshPage}>Refresh</nord-button>
+					</nord-empty-state>
+				{/if}
+			</div>
+		{/if}
 	</div>
 	<InOutBox
 		class="row-start-4 col-start-1 col-span-2 md:col-span-1"

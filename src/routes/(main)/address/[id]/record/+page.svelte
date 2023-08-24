@@ -3,10 +3,9 @@
 	import { Recorder } from '$lib/services/media/av'
 	import { onDestroy, onMount } from 'svelte'
 	import type { PageData } from './$types'
-	import { uploadImage, uploadThumbnail, uploadVideo } from '$lib/services/firebase/storage'
+	import { uploadThumbnail, uploadVideo } from '$lib/services/firebase/storage'
 	import InOutBox from '$lib/components/InOutBox.svelte'
 	import { goto } from '$app/navigation'
-	import { updateAddress } from '$lib/services/firebase/firestore'
 	import { getPageTitle } from '$lib/utils/page-title'
 
 	export let data: PageData
