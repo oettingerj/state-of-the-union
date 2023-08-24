@@ -7,6 +7,7 @@ import {
 } from 'firebase/auth'
 import { getApp } from '$lib/services/firebase/firebase'
 import type { FBUser } from '$lib/types/user'
+import { updateAddressNames } from '$lib/services/firebase/firestore'
 
 let recaptcha: RecaptchaVerifier
 
@@ -50,11 +51,16 @@ export async function getCurrentUser() {
 	return auth.currentUser
 }
 
-export function updateUser(user: Partial<FBUser>) {
+export async function updateUser(user: Partial<FBUser>) {
 	const auth = getFBAuth()
 	if (auth.currentUser === null) {
 		throw new Error('No user is logged in.')
 	} else {
-		return updateProfile(auth.currentUser, user)
+		if (user.displayName && user.displayName !== auth.currentUser.displayName) {
+			await updateProfile(auth.currentUser, user)
+			await updateAddressNames(auth.currentUser.uid, user.displayName)
+		} else {
+			await updateProfile(auth.currentUser, user)
+		}
 	}
 }

@@ -21,9 +21,9 @@
 	}
 </script>
 
-<div class="flex flex-col items-center border-b border-gray-300 py-5 gap-5">
+<div class="flex flex-col items-center border-b border-gray-300 p-5 gap-5">
 	<img class="h-32 object-contain" src="/images/nicki-flag.jpg" alt="nicki minaj flag" />
-	<h2 class="text-2xl font-normal">Sign in with your phone number</h2>
+	<h2 class="text-xl md:text-2xl">Sign in with your phone number</h2>
 </div>
 <div class="p-5 flex flex-col items-center">
 	<form novalidate class="flex flex-col gap-5" on:submit|preventDefault={handleLogin}>

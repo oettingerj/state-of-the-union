@@ -1,5 +1,10 @@
 <script lang="ts">
+	import { getPageTitle } from '$lib/utils/page-title'
 </script>
+
+<svelte:head>
+	<title>{getPageTitle()}</title>
+</svelte:head>
 
 <div class="relative flex flex-col h-full">
 	<img
@@ -13,14 +18,14 @@
 			new address to the national discourse.
 		</p>
 		<div class="flex flex-wrap gap-5 justify-center">
-			<nord-button expand href="/library">
+			<nord-button class="grow" expand href="/library">
 				<div class="flex flex-col items-center gap-1">
 					<nord-icon class="text-pink-600" name="interface-content-book" size="l" />
 					<h3 class="font-medium text-lg">Library</h3>
 					<p class="text-gray-700">Browse prior addresses</p>
 				</div>
 			</nord-button>
-			<nord-button expand href="/address/new">
+			<nord-button class="grow" expand href="/address/new">
 				<div class="flex flex-col items-center gap-1">
 					<nord-icon class="text-pink-600" name="file-notes" size="l" />
 					<h3 class="font-medium text-lg">Draft</h3>

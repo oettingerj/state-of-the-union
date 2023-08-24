@@ -1,7 +1,8 @@
 export interface Address {
 	id: string
 	title: string
-	user: string
+	userId: string
+	userName: string
 	created: number
 	updated: number
 	in: string

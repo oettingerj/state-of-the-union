@@ -8,7 +8,6 @@
 	import type { ConfirmationResult } from 'firebase/auth'
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { flat } from 'radash'
 
 	export let data: PageData
 	let errorText = ''
@@ -38,7 +37,7 @@
 			if (user.displayName) {
 				return goto('/home')
 			} else {
-				return goto('/auth/info')
+				return goto('/user/info')
 			}
 		} catch (err) {
 			errorText = 'Invalid code'
@@ -52,8 +51,8 @@
 	}
 </script>
 
-<div class="flex flex-col items-center border-b border-gray-300 py-5 gap-5">
-	<h2 class="text-2xl font-normal">Confirm your phone number</h2>
+<div class="flex flex-col items-center border-b border-gray-300 p-5">
+	<h2 class="text-lg md:text-2xl font-normal">Confirm your phone number</h2>
 </div>
 <div class="p-5 flex flex-col items-center">
 	<form novalidate class="flex flex-col gap-5" on:submit|preventDefault={handleConfirm}>

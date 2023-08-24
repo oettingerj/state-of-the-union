@@ -32,12 +32,13 @@ export async function createAddress(
 	const timestamp = Date.now()
 	const docRef = await addDoc(collection(db, 'addresses'), {
 		title: address.title,
-		user: currentUser.uid,
+		userId: currentUser.uid,
+		userName: currentUser.displayName,
 		in: address.in,
 		out: address.out,
 		created: timestamp,
 		updated: timestamp
-	})
+	} as Address)
 
 	return docRef.id
 }
@@ -48,20 +49,23 @@ export async function updateAddress(id: string, fields: Partial<Address>) {
 	await updateDoc(docRef, {
 		...fields,
 		updated: Date.now()
-	})
+	} as Partial<Address>)
 }
 
-export async function getAddress(id: string): Promise<Address> {
+export async function updateAddressNames(userId: string, name: string) {
 	const db = getDB()
-	const docRef = doc(db, 'addresses', id)
-	const snapshot = await getDoc(docRef)
-	if (!snapshot.exists()) {
-		throw new Error(`Address does not exist with id ${id}`)
-	}
-	return {
-		...snapshot.data(),
-		id: snapshot.id
-	} as Address
+	const addressesRef = collection(db, 'addresses')
+	const q = query(addressesRef, where('userId', '==', userId))
+	const snapshot = await getDocs(q)
+	const promises: Promise<void>[] = []
+	snapshot.forEach((doc) => {
+		promises.push(
+			updateDoc(doc.ref, {
+				userName: name
+			} as Partial<Address>)
+		)
+	})
+	await Promise.all(promises)
 }
 
 export async function getUser(id: string): Promise<User> {
@@ -79,15 +83,16 @@ export async function getUser(id: string): Promise<User> {
 export async function registerAddressView(userId: string, addressId: string) {
 	const db = getDB()
 	const user = await getUser(userId)
+	const viewedAddressesSet = new Set([...user.viewedAddresses, addressId])
 	await setDoc(doc(db, 'users', userId), {
-		viewedAddresses: [...user.viewedAddresses, addressId]
+		viewedAddresses: Array.from(viewedAddressesSet)
 	})
 }
 
 export async function getMyAddresses(currentUserId: string): Promise<Address[]> {
 	const db = getDB()
 	const addressesRef = collection(db, 'addresses')
-	const q = query(addressesRef, where('user', '==', currentUserId))
+	const q = query(addressesRef, where('userId', '==', currentUserId))
 	const snapshot = await getDocs(q)
 	const results: Address[] = []
 	snapshot.forEach((doc) => {

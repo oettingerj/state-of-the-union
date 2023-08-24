@@ -15,7 +15,7 @@
 >
 	<div class="flex justify-between items-end">
 		<h2 class="text-xl font-medium">{title}</h2>
-		{#if address.user === currentUser?.uid}
+		{#if address.userId === currentUser?.uid}
 			<nord-button href="/address/{address.id}/edit">
 				<nord-icon name="interface-edit" size="m" />
 			</nord-button>

@@ -2,6 +2,7 @@
 	import TextArea from '$lib/components/TextArea/TextArea.svelte'
 	import { goto } from '$app/navigation'
 	import { createAddress } from '$lib/services/firebase/firestore'
+	import { getPageTitle } from '$lib/utils/page-title'
 
 	const now = new Date()
 	const dateString = now.toLocaleDateString('en-US')
@@ -11,16 +12,23 @@
 	let whatsOut = ''
 	let editingTitle = false
 	let titleRef: HTMLHeadingElement
+	let saving = false
 
 	$: continueDisabled = whatsIn.length === 0 || whatsOut.length === 0
 
 	async function submitAddress() {
-		const id = await createAddress({
-			title,
-			in: whatsIn,
-			out: whatsOut
-		})
-		return goto(`/address/${id}/record`)
+		saving = true
+		try {
+			const id = await createAddress({
+				title,
+				in: whatsIn,
+				out: whatsOut
+			})
+			return goto(`/address/${id}/record`)
+		} catch (err) {
+			console.error(err)
+			saving = false
+		}
 	}
 
 	function handleTitleFocus() {
@@ -50,6 +58,10 @@
 		title = titleRef.textContent ?? title
 	}
 </script>
+
+<svelte:head>
+	<title>{getPageTitle('New Address')}</title>
+</svelte:head>
 
 <div class="flex flex-col items-center py-16 px-5 md:px-10 gap-5">
 	<div class="flex gap-4 items-center">
@@ -83,11 +95,11 @@
 		class="grid md:grid-cols-2 grid-rows-2 md:grid-rows-1 gap-x-5 gap-y-12 w-full min-h-[300px]"
 	>
 		<div class="col-start-1">
-			<h3 class="text-xl font-medium mb-1">What's In?</h3>
+			<h3 class="text-xl font-medium mb-1">💅 What's In?</h3>
 			<TextArea bind:value={whatsIn} class="w-full h-full" />
 		</div>
 		<div class="row-start-2 md:row-start-1 md:col-start-2">
-			<h3 class="text-xl font-medium mb-1">What's Out?</h3>
+			<h3 class="text-xl font-medium mb-1">🤢 What's Out?</h3>
 			<TextArea bind:value={whatsOut} class="w-full h-full" />
 		</div>
 	</div>
@@ -97,6 +109,7 @@
 			on:click={submitAddress}
 			size="l"
 			variant="primary"
+			loading={saving}
 		>
 			<nord-icon slot="start" name="interface-video" size="l" />
 			Record

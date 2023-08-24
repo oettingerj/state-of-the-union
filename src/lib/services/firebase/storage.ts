@@ -18,9 +18,16 @@ export async function uploadVideo(addressId: string, blob: Blob) {
 	return downloadUrl
 }
 
-export async function uploadImage(file: File) {
+export async function uploadImage(data: File | Blob) {
 	const storage = getFBStorage()
 	const imageRef = ref(storage, `address-images/${uid(10)}`)
-	await uploadBytes(imageRef, file)
+	await uploadBytes(imageRef, data)
 	return await getDownloadURL(imageRef)
+}
+
+export async function uploadThumbnail(addressId: string, img: Blob) {
+	const url = await uploadImage(img)
+	await updateAddress(addressId, {
+		thumbnailUrl: url
+	})
 }

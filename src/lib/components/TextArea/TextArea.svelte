@@ -61,7 +61,7 @@
 				Image.configure({
 					inline: true,
 					HTMLAttributes: {
-						class: 'object-contain max-h-full'
+						class: 'object-contain max-h-[200px]'
 					}
 				})
 			],

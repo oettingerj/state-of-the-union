@@ -4,6 +4,7 @@
 	import InOutBox from './InOutBox.svelte'
 	import { getShareUrl } from '$lib/services/utils/share'
 	import type { FBUser } from '$lib/types/user'
+	import { notify } from '$lib/stores/notifications'
 
 	export let address: Address
 	export let currentUser: FBUser | null | undefined = undefined
@@ -16,6 +17,7 @@
 			})
 		} else {
 			navigator.clipboard.writeText(getShareUrl(address.id))
+			notify('Link copied to clipboard')
 		}
 	}
 </script>
@@ -27,15 +29,22 @@
 			Share
 		</nord-button>
 	</div>
-	<div class="row-start-2 col-span-2 flex items-center justify-center relative">
+	<div class="row-start-2 col-span-2 flex flex-col items-center justify-center gap-1">
 		<h1 class="text-xl font-medium">{address.title}</h1>
+		<span class="text-sm font-medium text-gray-600">By {address.userName}</span>
+		{#if address.userId !== currentUser?.uid}
+			<span>{address.userName}</span>
+		{/if}
 	</div>
 	<div class="relative row-start-3 col-span-2 flex h-full items-center justify-center">
 		<div class="relative h-full">
 			<video controls class="max-h-full" src={address.videoUrl} />
-			{#if address.user === currentUser?.uid}
-				<nord-button class="absolute top-3 right-3" href="/address/{address.id}/record">
-					<nord-icon name="interface-edit" size="m" />
+			{#if address.userId === currentUser?.uid}
+				<nord-button
+					class="absolute top-1 md:top-3 right-1 md:right-3"
+					href="/address/{address.id}/record"
+				>
+					<nord-icon name="interface-video" size="m" />
 				</nord-button>
 			{/if}
 		</div>
@@ -63,7 +72,7 @@
 
 	@media (min-width: 768px) {
 		.grid {
-			grid-template-rows: 1fr minmax(0, 8fr) 8fr;
+			grid-template-rows: 1fr 1fr minmax(0, 8fr) 8fr;
 		}
 	}
 </style>

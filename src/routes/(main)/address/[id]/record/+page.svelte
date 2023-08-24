@@ -3,9 +3,11 @@
 	import { Recorder } from '$lib/services/media/av'
 	import { onDestroy, onMount } from 'svelte'
 	import type { PageData } from './$types'
-	import { uploadVideo } from '$lib/services/firebase/storage'
+	import { uploadImage, uploadThumbnail, uploadVideo } from '$lib/services/firebase/storage'
 	import InOutBox from '$lib/components/InOutBox.svelte'
 	import { goto } from '$app/navigation'
+	import { updateAddress } from '$lib/services/firebase/firestore'
+	import { getPageTitle } from '$lib/utils/page-title'
 
 	export let data: PageData
 
@@ -15,6 +17,7 @@
 	let mediaStream: MediaStream
 	let uploading = false
 	let loading = true
+	let thumbnailBlob: Blob | null
 
 	onMount(async () => {
 		try {
@@ -53,6 +56,9 @@
 		recorder = new Recorder(canvas, mediaStream)
 		recorder.start()
 		recording = true
+		canvas.toBlob((blob) => {
+			thumbnailBlob = blob
+		})
 	}
 
 	async function stopRecording() {
@@ -60,11 +66,22 @@
 		recording = false
 		uploading = true
 		let recordedBlob = new Blob(recordedData, { type: 'video/webm' })
-		await uploadVideo(data.address.id, recordedBlob)
+		const promises = []
+		promises.push(uploadVideo(data.address.id, recordedBlob))
+
+		if (thumbnailBlob) {
+			promises.push(uploadThumbnail(data.address.id, thumbnailBlob))
+		}
+
+		await Promise.all(promises)
 		uploading = false
 		return goto(`/address/${data.address.id}`)
 	}
 </script>
+
+<svelte:head>
+	<title>{getPageTitle('Record Address')}</title>
+</svelte:head>
 
 <div class="grid grid-cols-2 grid-rows-3 md:grid-rows-2 h-full gap-5 p-5">
 	<div class="relative row-start-1 col-span-2 flex h-full items-center justify-center">

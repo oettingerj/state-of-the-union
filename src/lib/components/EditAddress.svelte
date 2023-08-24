@@ -8,6 +8,8 @@
 	const now = new Date()
 	const dateString = now.toLocaleDateString('en-US')
 	const dispatch = createEventDispatcher()
+	let savingForRecord = false
+	let saving = false
 
 	export let address: Partial<Address> & Required<Pick<Address, 'title' | 'in' | 'out'>> = {
 		title: `State of the Union Address ${dateString}`,
@@ -21,18 +23,31 @@
 	$: continueDisabled = address.in.length === 0 || address.out.length === 0
 
 	async function recordAddress() {
-		if (!address.id) {
-			address.id = await createAddress(address)
-		} else {
-			await updateAddress(address.id, address)
+		savingForRecord = true
+		try {
+			if (!address.id) {
+				address.id = await createAddress(address)
+			} else {
+				await updateAddress(address.id, address)
+			}
+			return goto(`/address/${address.id}/record`)
+		} catch (err) {
+			console.error(err)
+			savingForRecord = false
 		}
-		return goto(`/address/${address.id}/record`)
 	}
 
 	async function saveAddress() {
 		if (address.id) {
-			await updateAddress(address.id, address)
-			dispatch('save')
+			saving = true
+			try {
+				await updateAddress(address.id, address)
+				dispatch('save')
+				saving = false
+			} catch (err) {
+				console.error(err)
+				saving = false
+			}
 		}
 	}
 
@@ -109,6 +124,7 @@
 	<div class="mt-10 flex items-center gap-2">
 		<nord-button
 			disabled={continueDisabled}
+			loading={savingForRecord}
 			on:click={recordAddress}
 			size="l"
 			variant={address.videoUrl ? 'default' : 'primary'}
@@ -117,7 +133,9 @@
 			{address.videoUrl ? 'Re-Record Address' : 'Record Address'}
 		</nord-button>
 		{#if address.id}
-			<nord-button size="l" variant="primary" on:click={saveAddress}>Save</nord-button>
+			<nord-button loading={saving} size="l" variant="primary" on:click={saveAddress}>
+				Save
+			</nord-button>
 		{/if}
 	</div>
 </div>

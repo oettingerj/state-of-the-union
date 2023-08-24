@@ -7,6 +7,7 @@ export class Recorder {
 		this.data = []
 		this.mediaStream = canvas.captureStream(30)
 		const audioTracks = audioSource.getAudioTracks()
+
 		if (audioTracks.length > 0) {
 			this.mediaStream.addTrack(audioTracks[0])
 		}

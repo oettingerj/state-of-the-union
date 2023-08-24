@@ -5,6 +5,7 @@
 	import type { LayoutData } from './$types'
 	import { onMount } from 'svelte'
 	import type { Layout } from '@nordhealth/components'
+	import NotificationCenter from '../../lib/components/NotificationCenter.svelte'
 
 	export let data: LayoutData
 
@@ -64,6 +65,10 @@
 				<nord-avatar slot="start" />
 				{data.currentUser?.displayName ?? ''}
 			</nord-button>
+			<nord-dropdown-item href="/user/info">
+				Settings
+				<nord-icon slot="end" name="navigation-settings" />
+			</nord-dropdown-item>
 			<nord-dropdown-item on:click={handleSignOut}>
 				Sign out
 				<nord-icon slot="end" name="interface-logout" />
@@ -71,6 +76,7 @@
 		</nord-dropdown>
 	</nord-navigation>
 	<div class="h-screen">
+		<NotificationCenter />
 		<slot />
 	</div>
 </nord-layout>
