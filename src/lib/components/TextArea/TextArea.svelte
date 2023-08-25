@@ -18,6 +18,7 @@
 	import { Image } from '@tiptap/extension-image'
 	import { onDestroy, onMount } from 'svelte'
 	import { uploadImage } from '$lib/services/firebase/storage'
+	import { uid } from 'radash'
 
 	export let value = ''
 	let className = ''
@@ -25,9 +26,11 @@
 	let editorAnchor: HTMLElement
 	let editor: Editor
 	let currentColor = '#000000'
-	let colorPickerRef: HTMLLabelElement
+	let colorPickerLabelRef: HTMLLabelElement
+	let colorPickerRef: HTMLInputElement
 	let fileInputRef: HTMLInputElement
 	let uploadingImage = false
+	const id = uid(5)
 
 	$: isBold = editor?.isActive('bold')
 	$: isItalic = editor?.isActive('italic')
@@ -102,7 +105,7 @@
 	}
 
 	function handleColorPickerClick() {
-		colorPickerRef.click()
+		colorPickerLabelRef.click()
 	}
 
 	function handleChangeColor() {
@@ -185,13 +188,14 @@
 				<div class="h-6 w-6 rounded-sm" style="background-color: {currentColor}" />
 			</nord-button>
 			<input
-				id="color-input"
+				id="{id}-color-input"
+				bind:this={colorPickerRef}
 				value={currentColor}
 				type="color"
-				class="absolute opacity-0 left-1/2 -translate-x-1/2 bottom-0 translate-y-full"
+				class="absolute opacity-0 left-1/2 -translate-x-1/2 bottom-0 translate-y-full pointer-events-none"
 				on:input={handleChangeColor}
 			/>
-			<label bind:this={colorPickerRef} hidden for="color-input" />
+			<label bind:this={colorPickerLabelRef} hidden for="{id}-color-input" />
 		</div>
 	</div>
 	<div class="h-full" bind:this={editorAnchor} />
