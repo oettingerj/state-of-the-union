@@ -74,7 +74,7 @@
 
 		await Promise.all(promises)
 		uploading = false
-		return goto(`/address/${data.address.id}`)
+		return goto(`/address/${data.address.id}?processing`)
 	}
 </script>
 

@@ -52,6 +52,20 @@ export async function updateAddress(id: string, fields: Partial<Address>) {
 	} as Partial<Address>)
 }
 
+export async function getAddress(id: string): Promise<Address> {
+	const db = getDB()
+	const docRef = doc(db, 'addresses', id)
+	const snapshot = await getDoc(docRef)
+	if (!snapshot.exists()) {
+		throw new Error(`Address does not exist with id ${id}`)
+	} else {
+		return {
+			...snapshot.data(),
+			id
+		} as Address
+	}
+}
+
 export async function updateAddressNames(userId: string, name: string) {
 	const db = getDB()
 	const addressesRef = collection(db, 'addresses')

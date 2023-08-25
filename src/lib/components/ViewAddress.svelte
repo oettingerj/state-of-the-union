@@ -1,27 +1,62 @@
 <script lang="ts">
 	import type { Address } from '$lib/types/address'
-	import type { User } from 'firebase/auth'
 	import InOutBox from './InOutBox.svelte'
 	import { getShareUrl } from '$lib/services/utils/share'
 	import type { FBUser } from '$lib/types/user'
 	import { notify } from '$lib/stores/notifications'
-	import { PENDING_VIDEO } from '../constants/av'
+	import { PENDING_VIDEO } from '$lib/constants/av'
+	import { getAddress } from '$lib/services/firebase/firestore'
+	import { onDestroy, onMount } from 'svelte'
 
 	export let address: Address
 	export let currentUser: FBUser | null | undefined = undefined
-
 	const isCurrentUser = address.userId === currentUser?.uid
 
+	let maxPollingMs = 30000
+	let pollingIntervalMs = 1000
+	let intervalId: number | undefined
+	let timerStart: number
+
+	onMount(() => {
+		if (address.videoUrl === PENDING_VIDEO) {
+			intervalId = setInterval(pollForCompletedVideo, pollingIntervalMs)
+			timerStart = Date.now()
+		}
+	})
+
+	onDestroy(() => {
+		if (intervalId) {
+			clearInterval(intervalId)
+		}
+	})
+
 	function shareAddress() {
-		if (navigator.share && navigator.canShare()) {
-			navigator.share({
-				title: address.title,
-				url: getShareUrl(address.id)
-			})
+		const sharePayload: ShareData = {
+			title: address.title,
+			url: getShareUrl(address.id)
+		}
+		if (navigator.share && navigator.canShare(sharePayload)) {
+			navigator.share(sharePayload)
 		} else {
 			navigator.clipboard.writeText(getShareUrl(address.id))
 			notify('Link copied to clipboard')
 		}
+	}
+
+	async function pollForCompletedVideo() {
+		if (timerStart + maxPollingMs < Date.now()) {
+			stopPolling()
+		} else {
+			address = await getAddress(address.id)
+			if (address.videoUrl !== PENDING_VIDEO) {
+				stopPolling()
+			}
+		}
+	}
+
+	function stopPolling() {
+		clearInterval(intervalId)
+		intervalId = undefined
 	}
 
 	function refreshPage() {
@@ -62,13 +97,17 @@
 						</nord-button>
 					{/if}
 				{:else}
-					<nord-empty-state>
+					<nord-empty-state class="rounded-lg">
 						<h2>Video Processing In Progress</h2>
 						<p>
 							{isCurrentUser ? 'Your' : 'This'} video is processing. This typically takes
 							less than a minute.
 						</p>
-						<nord-button on:click={refreshPage}>Refresh</nord-button>
+						{#if intervalId}
+							<nord-spinner size="l" />
+						{:else}
+							<nord-button on:click={refreshPage}>Refresh</nord-button>
+						{/if}
 					</nord-empty-state>
 				{/if}
 			</div>

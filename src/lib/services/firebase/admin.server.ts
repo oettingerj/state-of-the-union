@@ -20,5 +20,8 @@ export async function getAddress(id: string): Promise<Address> {
 	if (!snapshot.exists) {
 		throw new Error(`Address does not exist with id ${id}`)
 	}
-	return snapshot.data() as Address
+	return {
+		...snapshot.data(),
+		id
+	} as Address
 }

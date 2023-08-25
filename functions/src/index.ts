@@ -5,10 +5,12 @@ import { getFirestore } from 'firebase-admin/firestore'
 import ffmpegPath from 'ffmpeg-static'
 import ffmpeg from 'fluent-ffmpeg'
 import { error } from 'firebase-functions/logger'
+import { randomUUID } from 'crypto'
+import { unlinkSync } from 'fs'
 
 initializeApp()
 
-export const convertVideo = onObjectFinalized({ memory: '2GiB' }, async (event: StorageEvent) => {
+export const convertVideo = onObjectFinalized({ memory: '4GiB' }, async (event: StorageEvent) => {
 	const storage = getStorage()
 	const filePath = event.data.name
 	const fileBucket = event.data.bucket
@@ -21,48 +23,70 @@ export const convertVideo = onObjectFinalized({ memory: '2GiB' }, async (event: 
 	const bucket = storage.bucket(fileBucket)
 	const readStream = bucket.file(filePath).createReadStream()
 	const outputFilePath = filePath.replace('video-staging', 'address-videos')
-	const fileId = filePath.replace('video-staging/', '')
+	const addressId = filePath.replace('video-staging/', '')
+	const tempFile = randomUUID()
 
-	await setVideoUrlToPending(fileId)
+	await setVideoUrlToPending(addressId)
 
 	return new Promise<void>((resolve, reject) => {
 		ffmpeg()
 			.setFfmpegPath(ffmpegPath!)
 			.input(readStream)
 			.outputOption('-f mp4')
-			.outputOption('-c copy')
+			.outputOption('-c:v copy')
+			.outputOption('-c:a aac')
 			.on('end', async () => {
-				await bucket.upload(fileId, {
-					destination: outputFilePath,
-					metadata: {
-						contentType: 'video/mp4'
-					}
-				})
-				const url = await getDownloadURL(bucket.file(outputFilePath))
-				await addVideoUrlToAddress(fileId, url)
-				resolve()
+				try {
+					await bucket.upload(tempFile, {
+						destination: outputFilePath,
+						metadata: {
+							contentType: 'video/mp4'
+						}
+					})
+					const url = await getDownloadURL(bucket.file(outputFilePath))
+					await addVideoUrlToAddress(addressId, url)
+					deleteTempFile(tempFile)
+					resolve()
+				} catch (err) {
+					error(err)
+					deleteTempFile(tempFile)
+					await updateAddress(addressId, {
+						videoUrl: null
+					})
+					reject()
+				}
 			})
-			.on('error', (err) => {
+			.on('error', async (err) => {
 				error(err)
+				deleteTempFile(tempFile)
+				await updateAddress(addressId, {
+					videoUrl: null
+				})
 				reject()
 			})
-			.output(fileId)
+			.output(tempFile)
 			.run()
 	})
 })
 
 async function addVideoUrlToAddress(addressId: string, url: string) {
-	const db = getFirestore()
-	const addressDoc = db.collection('addresses').doc(addressId)
-	await addressDoc.update({
+	await updateAddress(addressId, {
 		videoUrl: url
 	})
 }
 
 async function setVideoUrlToPending(addressId: string) {
-	const db = getFirestore()
-	const addressDoc = db.collection('addresses').doc(addressId)
-	await addressDoc.update({
+	await updateAddress(addressId, {
 		videoUrl: '_pending'
 	})
+}
+
+async function updateAddress(addressId: string, address: object) {
+	const db = getFirestore()
+	const addressDoc = db.collection('addresses').doc(addressId)
+	await addressDoc.update(address)
+}
+
+function deleteTempFile(path: string) {
+	unlinkSync(path)
 }

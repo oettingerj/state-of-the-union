@@ -4,10 +4,16 @@
 	import { onMount } from 'svelte'
 	import { registerAddressView } from '$lib/services/firebase/firestore'
 	import { getPageTitle } from '$lib/utils/page-title'
+	import { page } from '$app/stores'
 
 	export let data: PageData
 
 	onMount(() => {
+		if ($page.url.searchParams.has('processing')) {
+			$page.url.searchParams.delete('processing')
+			window.history.replaceState({}, '', $page.url)
+		}
+
 		if (data.currentUser && data.currentUser.uid !== data.address.userId) {
 			registerAddressView(data.currentUser.uid, data.address.id)
 		}
