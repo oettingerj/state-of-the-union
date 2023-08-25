@@ -25,7 +25,7 @@
 	let editorAnchor: HTMLElement
 	let editor: Editor
 	let currentColor = '#000000'
-	let colorPickerRef: HTMLInputElement
+	let colorPickerRef: HTMLLabelElement
 	let fileInputRef: HTMLInputElement
 	let uploadingImage = false
 
@@ -185,12 +185,13 @@
 				<div class="h-6 w-6 rounded-sm" style="background-color: {currentColor}" />
 			</nord-button>
 			<input
+				id="color-input"
 				value={currentColor}
-				bind:this={colorPickerRef}
 				type="color"
 				class="absolute opacity-0 left-1/2 -translate-x-1/2 bottom-0 translate-y-full"
 				on:input={handleChangeColor}
 			/>
+			<label bind:this={colorPickerRef} hidden for="color-input" />
 		</div>
 	</div>
 	<div class="h-full" bind:this={editorAnchor} />
