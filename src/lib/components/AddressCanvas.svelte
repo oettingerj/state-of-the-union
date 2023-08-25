@@ -57,9 +57,7 @@
 			}
 		}
 
-		requestAnimationFrame(() => {
-			renderLoop()
-		})
+		requestAnimationFrame(renderLoop)
 	}
 
 	function calculateFacePlacement(faceImage: ImageBitmap, bgWidth: number, bgHeight: number) {
@@ -77,7 +75,7 @@
 		try {
 			videoRef.srcObject = mediaStream
 			await videoRef.play()
-			renderLoop()
+			requestAnimationFrame(renderLoop)
 		} catch (e) {
 			console.warn(e)
 		}

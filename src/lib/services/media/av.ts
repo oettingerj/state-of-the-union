@@ -1,3 +1,5 @@
+const mimeTypes = ['video/webm;codecs=vp9']
+
 export class Recorder {
 	mediaRecorder: MediaRecorder
 	mediaStream: MediaStream
@@ -12,7 +14,10 @@ export class Recorder {
 			this.mediaStream.addTrack(audioTracks[0])
 		}
 
-		this.mediaRecorder = new MediaRecorder(this.mediaStream)
+		this.mediaRecorder = new MediaRecorder(this.mediaStream, {
+			videoBitsPerSecond: 5000000,
+			mimeType: getPreferredMIMEType()
+		})
 		this.mediaRecorder.ondataavailable = (event) => {
 			this.data.push(event.data)
 		}
@@ -28,10 +33,22 @@ export class Recorder {
 				this.mediaRecorder.onstop = () => {
 					resolve(this.data)
 				}
+				this.mediaRecorder.onerror = (err) => {
+					console.error(err)
+				}
 				this.mediaRecorder.stop()
 			} else {
 				resolve(this.data)
 			}
 		})
 	}
+}
+
+function getPreferredMIMEType() {
+	mimeTypes.forEach((type) => {
+		if (MediaRecorder.isTypeSupported(type)) {
+			return type
+		}
+	})
+	return undefined
 }

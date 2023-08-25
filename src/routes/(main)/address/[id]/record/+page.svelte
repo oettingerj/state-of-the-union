@@ -17,6 +17,7 @@
 	let uploading = false
 	let loading = true
 	let thumbnailBlob: Blob | null
+	let errorMessage = ''
 
 	onMount(async () => {
 		try {
@@ -28,6 +29,7 @@
 			})
 		} catch (e) {
 			console.warn(e)
+			errorMessage = 'Unable to access camera and microphone. Please allow access.'
 		}
 	})
 
@@ -85,7 +87,7 @@
 <div class="grid grid-cols-2 grid-rows-3 md:grid-rows-2 h-full gap-5 p-5">
 	<div class="relative row-start-1 col-span-2 flex h-full items-center justify-center">
 		<div class="relative h-full w-full">
-			{#if loading}
+			{#if !errorMessage && loading}
 				<div
 					class="absolute flex flex-col items-center gap-1 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
 				>
@@ -93,8 +95,18 @@
 					<span class="text-xs text-gray-600">Loading video...</span>
 				</div>
 			{/if}
-			{#if mediaStream}
-				<AddressCanvas bind:canvas {mediaStream} on:load-complete={handleLoadComplete} />
+			{#if !errorMessage}
+				{#if mediaStream}
+					<AddressCanvas
+						bind:canvas
+						{mediaStream}
+						on:load-complete={handleLoadComplete}
+					/>
+				{/if}
+			{:else}
+				<div class="flex h-full items-center justify-center">
+					<span>{errorMessage}</span>
+				</div>
 			{/if}
 			{#if !loading}
 				<nord-button
