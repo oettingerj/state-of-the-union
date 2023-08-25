@@ -1,3 +1,11 @@
+<script>
+	import { getPageTitle } from '../lib/utils/page-title'
+</script>
+
+<svelte:head>
+	<title>{getPageTitle()}</title>
+</svelte:head>
+
 <div class="p-10 md:p-20 gap-10 flex grow flex-col h-full justify-between">
 	<p class="sm:w-2/3 text-gray-400 font-light prose-lg md:prose-2xl">
 		Mr. Speaker. Madam Vice President. Our First Lady and Second Gentleman. Members of Congress

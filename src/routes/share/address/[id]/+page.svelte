@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PageData } from '../../../../../.svelte-kit/types/src/routes'
+	import type { PageData } from './$types'
 	import ViewAddress from '$lib/components/ViewAddress.svelte'
 	import { getPageTitle } from '$lib/utils/page-title'
 
