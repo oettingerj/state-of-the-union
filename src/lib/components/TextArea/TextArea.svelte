@@ -176,20 +176,22 @@
 				/>
 			</nord-button>
 		</nord-button-group>
-		<nord-button
-			style="--n-button-padding-inline: 4px"
-			on:click={handleColorPickerClick}
-			on:mousedown|preventDefault
-		>
-			<div class="h-6 w-6 rounded-sm" style="background-color: {currentColor}" />
+		<div class="relative">
+			<nord-button
+				style="--n-button-padding-inline: 4px"
+				on:click={handleColorPickerClick}
+				on:mousedown|preventDefault
+			>
+				<div class="h-6 w-6 rounded-sm" style="background-color: {currentColor}" />
+			</nord-button>
 			<input
 				value={currentColor}
 				bind:this={colorPickerRef}
 				type="color"
-				class="absolute opacity-0"
+				class="absolute opacity-0 left-1/2 -translate-x-1/2 bottom-0 translate-y-full"
 				on:input={handleChangeColor}
 			/>
-		</nord-button>
+		</div>
 	</div>
 	<div class="h-full" bind:this={editorAnchor} />
 </div>
