@@ -73,9 +73,8 @@
 	</div>
 	<div class="row-start-2 col-span-2 flex flex-col items-center justify-center gap-1">
 		<h1 class="text-xl font-medium">{address.title}</h1>
-		<span class="text-sm font-medium text-gray-600">By {address.userName}</span>
 		{#if address.userId !== currentUser?.uid}
-			<span>{address.userName}</span>
+			<span class="text-sm font-medium text-gray-600">By {address.userName}</span>
 		{/if}
 	</div>
 	<div class="relative row-start-3 col-span-2 flex h-full items-center justify-center">
