@@ -57,9 +57,13 @@
 		recorder = new Recorder(canvas, mediaStream)
 		recorder.start()
 		recording = true
-		canvas.toBlob((blob) => {
-			thumbnailBlob = blob
-		})
+		canvas.toBlob(
+			(blob) => {
+				thumbnailBlob = blob
+			},
+			'image/jpeg',
+			0.5
+		)
 	}
 
 	async function stopRecording() {
