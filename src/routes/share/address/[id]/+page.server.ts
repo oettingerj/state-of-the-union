@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types'
+import type { PageServerLoad } from '../../../../../.svelte-kit/types/src/routes'
 import { getAddress, initApp } from '$lib/services/firebase/admin.server'
 import type { Address } from '$lib/types/address'
 import { error } from '@sveltejs/kit'

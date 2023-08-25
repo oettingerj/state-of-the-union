@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PageData } from './$types'
+	import type { PageData } from '../../../../../.svelte-kit/types/src/routes'
 	import ViewAddress from '$lib/components/ViewAddress.svelte'
-	import { getPageTitle } from '../../../lib/utils/page-title'
+	import { getPageTitle } from '$lib/utils/page-title'
 
 	export let data: PageData
 </script>
