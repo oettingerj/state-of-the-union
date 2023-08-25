@@ -45,10 +45,10 @@ export class Recorder {
 }
 
 function getPreferredMIMEType() {
-	mimeTypes.forEach((type) => {
+	for (const type of mimeTypes) {
 		if (MediaRecorder.isTypeSupported(type)) {
 			return type
 		}
-	})
+	}
 	return undefined
 }
